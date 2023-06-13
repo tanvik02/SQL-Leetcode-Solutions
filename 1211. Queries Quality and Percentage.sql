@@ -62,5 +62,8 @@ Cat queries quality equals ((2 / 5) + (3 / 3) + (4 / 7)) / 3 = 0.66
 Cat queries poor_ query_percentage is (1 / 3) * 100 = 33.33
 */
 Solution:
-select query_name ,round(sum(rating/position)/count(query_name), 2) as quality, round((1/count(query_name)*100),2) as poor_query_percentage
-from queries group by query_name
+select query_name, 
+    round(sum(rating/position)/count(query_name), 2) as quality,
+    round(100*sum(if(rating < 3, 1, 0))/count(query_name), 2) as poor_query_percentage
+from Queries
+group by query_name
