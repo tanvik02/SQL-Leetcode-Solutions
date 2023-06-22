@@ -44,18 +44,26 @@ Only the player with id 1 logged back in after the first day he had logged in so
 */
 
 Solution:
-select round(
-    ifnull(
-        (   
-            select count(distinct a.player_id)
-            from Activity as a join Activity as b
-            on a.player_id = b.player_id and datediff(b.event_date, a.event_date) = 1
-            where a.event_date = (
-                select min(event_date) from Activity where player_id = a.player_id
-            )
-        ) 
-        / -- devided by
-        (   select count(distinct player_id) from Activity   ),
-    0),
-2)
-as fraction;   
+WITH PlayerFirstLogin
+AS (
+    SELECT player_id
+        ,min(event_date) AS first_login_date
+    FROM Activity
+    GROUP BY player_id
+    )
+    ,PlayerConsecutiveLogin
+
+AS (
+    SELECT A.player_id
+    FROM Activity AS A
+    INNER JOIN PlayerFirstLogin FL ON A.player_id = FL.player_id
+        AND datediff(A.event_date, FL.first_login_date) = 1
+    )
+
+SELECT cast((
+            SELECT count(DISTINCT player_id)
+            FROM PlayerConsecutiveLogin
+            ) / cast((
+                SELECT count(DISTINCT player_id)
+                FROM Activity
+                ) AS FLOAT) AS DECIMAL(10, 2)) AS fraction
