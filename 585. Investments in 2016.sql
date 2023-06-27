@@ -53,18 +53,15 @@ The tiv_2015 value 10 is the same as the third and fourth records, and its locat
 The second record does not meet any of the two criteria. Its tiv_2015 is not like any other policyholders and its location is the same as the third record, which makes the third record fail, too.
 So, the result is the sum of tiv_2016 of the first and last record, which is 45.
 */
-select sum(TIV_2016) as TIV_2016
+select sum(insurance.TIV_2016) as TIV_2016
 from insurance
-where TIV_2015 in
-(
-  select TIV_2015 
-  from insurance
-  group by 1
-  having count(*) > 1
-) and concat(LAT, LON) in
-(
-  select concat(LAT,LON) 
-  from insurance
-  group by LAT, LON
-  having count(*) = 1
-);
+where insurance.TIV_2015 in
+    (select TIV_2015
+      from insurance
+      group by TIV_2015
+      having count(*) > 1)
+    and concat(LAT, LON) in
+    (select concat(LAT, LON)
+      from insurance
+      group by LAT, LON
+      having count(*) = 1)
